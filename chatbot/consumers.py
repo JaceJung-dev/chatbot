@@ -44,11 +44,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
         )
 
-        # 챗봇 응답 비동기 호출
+        # 챗봇 응답 스트리밍 출력
         chatbot_service = ChatBotService()
-        bot_response_text = await sync_to_async(chatbot_service.get_recommendation)(
-            user_message
-        )
+        bot_response_text = ""
+
+        async for chunk in chatbot_service.get_recommendation(user_message):
+            bot_response_text += chunk
+            await self.send(
+                text_data=json.dumps(
+                    {
+                        "user_message": user_message,
+                        "bot_message": bot_response_text,
+                        "is_streaming": True,
+                    }
+                )
+            )
 
         # 데이터베이스에 챗봇 응답 저장
         await sync_to_async(ChatMessage.objects.create)(
@@ -61,6 +71,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 {
                     "user_message": user_message,
                     "bot_message": bot_response_text,
+                    "is_streaming": False,
                 }
             )
         )

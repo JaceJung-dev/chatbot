@@ -9,7 +9,7 @@ from langchain_core.prompts import (
 class ChatBotService:
 
     def __init__(self):
-        self.model = ChatOpenAI(model="gpt-4o-mini", temperature=0.7)
+        self.model = ChatOpenAI(model="gpt-4o-mini", temperature=0.7, streaming=True)
 
         self.prompt = ChatPromptTemplate.from_messages(
             [
@@ -32,8 +32,7 @@ class ChatBotService:
             ]
         )
 
-    def get_recommendation(self, user_question):
+    async def get_recommendation(self, user_question):
         chain = self.prompt | self.model
-        response = chain.invoke({"user_question": user_question}).content
-
-        return response
+        async for chunk in chain.astream({"user_question": user_question}):
+            yield chunk.content
