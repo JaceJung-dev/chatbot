@@ -9,4 +9,5 @@ urlpatterns = [
         views.ChatMessageAPIView.as_view(),
         name="chat-message",
     ),
+    path("chat/", views.chat_view, name="chat"),
 ]

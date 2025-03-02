@@ -1,4 +1,4 @@
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -6,6 +6,10 @@ from rest_framework import status
 from .models import ChatRoom, ChatMessage
 from .serializers import ChatRoomSerializer
 from chatbot.views import ChatBotAPIView
+
+
+def chat_view(request):
+    return render(request, "chatroom/chat.html")
 
 
 class ChatRoomListAPIView(APIView):
