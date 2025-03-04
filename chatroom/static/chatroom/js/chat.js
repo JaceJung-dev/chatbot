@@ -34,7 +34,7 @@ socket.onmessage = function (event) {
         // 스트리밍이 끝나면 ID 제거하여 최종 메시지로 고정
         let botMessageElement = document.getElementById("bot-message");
         if (botMessageElement) {
-            botMessageElement.innerText = data.bot_message;
+            botMessageElement.innerHTML= data.bot_message;
             botMessageElement.removeAttribute("id");
         }
     }
@@ -70,22 +70,25 @@ function sendMessage() {
     inputField.value = ""; // 입력 필드 초기화
     chatBox.scrollTop = chatBox.scrollHeight;
     
-    setTimeout(() => {
-        window.isMessageSending = false;
-    }, 500);
 }
 
-function handleKeyDown(event) {
-    // console.log("⌨️ 키보드 입력 감지됨:", event.key);
+// 수정된 키 입력 처리 함수 - keypress 이벤트 사용
+function handleKeyPress(event) {
+    console.log("⌨️ 키보드 입력 감지됨:", event.key);
     if (event.key === "Enter" && !event.shiftKey) {
-        event.preventDefault();
+        event.preventDefault(); // 기본 Enter 동작(줄바꿈) 방지
         sendMessage();
-        
-        setTimeout(() => {
-            document.getElementById("user-input").removeEventListener("keydown", handleKeyDown);
-            document.getElementById("user-input").addEventListener("keydown", handleKeyDown, { once: true });
-        }, 100); 
     }
 }
 
-
+// HTML이 로드된 후 이벤트 리스너 등록
+document.addEventListener("DOMContentLoaded", function () {
+    // keydown 대신 keypress 이벤트 사용
+    document.getElementById("user-input").addEventListener("keypress", handleKeyPress);
+    
+    // 전송 버튼이 있는 경우 클릭 이벤트 등록
+    const sendButton = document.getElementById("send-button");
+    if (sendButton) {
+        sendButton.addEventListener("click", sendMessage);
+    }
+});
