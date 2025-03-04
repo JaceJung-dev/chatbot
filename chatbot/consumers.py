@@ -1,18 +1,21 @@
-import json
-from channels.generic.websocket import AsyncWebsocketConsumer
+import json  # 웹소켓에서 데이터를 JSON으로 주고 받기 위해 사용
+from channels.generic.websocket import (
+    AsyncWebsocketConsumer,
+)  # 비동기 처리를 위한 기본 클래스
 from .utils import ChatBotService
 from chatroom.models import ChatRoom, ChatMessage
-from asgiref.sync import sync_to_async
-import markdown
+from asgiref.sync import sync_to_async  # ORM을 비동기 방식으로 호출하기 위해 사용
+import markdown  # markdown 형식을 HTML로 변환
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         """클라이언트가 WebSocket에 연결되었을 때 실행"""
+
         self.chatroom_id = self.scope["url_route"]["kwargs"]["chatroom_id"]
+        # 채팅방 그룹 이름 설정
         self.room_group_name = f"chatroom_{self.chatroom_id}"
 
-        # WebSocket 그룹에 추가
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
@@ -22,6 +25,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         """클라이언트로부터 메시지를 받았을 때 실행"""
+        # JSON으로 받은 웹소켓 메시지를 Python 딕셔너리로 변환
         data = json.loads(text_data)
         user_message = data.get("message")
 
@@ -71,13 +75,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chatroom=chatroom, user_or_bot=False, messages=bot_response_text
         )
 
+        final_bot_response_html = markdown.markdown(bot_response_text.strip())
+
         # 최종 챗봇 응답을 클라이언트에 전송
         await self.send(
             text_data=json.dumps(
                 {
                     "user_message": user_message,
-                    "bot_message": bot_response_text,
+                    "bot_message": final_bot_response_html,
                     "is_streaming": False,
-                }
+                },
+                ensure_ascii=False,
             )
         )
