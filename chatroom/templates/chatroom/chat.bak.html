@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat</title>
+    <style>
+        .loading {
+            font-style: italic;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+    <h2>WebSocket 챗봇</h2>
+    <div id="chat-box"></div>
+    <input type="text" id="message-input" placeholder="메시지를 입력하세요">
+    <button onclick="sendMessage()">보내기</button>
+
+    <script>
+        const chatroom_id = 1;
+        const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chatroom/${chatroom_id}/`);
+    
+        socket.onopen = function () {
+            console.log("✅ WebSocket 연결 성공!");
+        };
+    
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            const chatBox = document.getElementById("chat-box");
+    
+            if (data.is_streaming) {
+                // ✅ 스트리밍 중이면 메시지를 업데이트
+                let botMessageElement = document.getElementById("bot-message");
+                if (!botMessageElement) {
+                    chatBox.innerHTML += `<p><b>챗봇:</b> <span id="bot-message">${data.bot_message}</span></p>`;
+                } else {
+                    botMessageElement.innerText = data.bot_message; // ✅ 실시간 업데이트
+                }
+            } else {
+                // ✅ 스트리밍 종료 후 메시지 확정
+                let botMessageElement = document.getElementById("bot-message");
+                if (botMessageElement) {
+                    botMessageElement.innerText = data.bot_message;
+                    botMessageElement.removeAttribute("id");
+                }
+            }
+        };
+    
+        function sendMessage() {
+            const inputField = document.getElementById("message-input");
+            const message = inputField.value;
+    
+            // 사용자 메시지 표시
+            const chatBox = document.getElementById("chat-box");
+            chatBox.innerHTML += `<p><b>사용자:</b> ${message}</p>`;
+    
+            // WebSocket으로 메시지 전송
+            socket.send(JSON.stringify({ message: message }));
+            inputField.value = "";
+        }
+    </script>
+    
+</body>
+</html>

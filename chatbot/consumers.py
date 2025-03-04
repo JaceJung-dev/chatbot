@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .utils import ChatBotService
 from chatroom.models import ChatRoom, ChatMessage
 from asgiref.sync import sync_to_async
+import markdown
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -28,6 +29,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({"error": "메시지가 비어 있습니다."}))
             return
 
+        # print(f"메세지 수신 확인 >>>> {user_message}")
+
         # 데이터베이스에 사용자 메시지 저장
         chatroom = await sync_to_async(ChatRoom.objects.get)(id=self.chatroom_id)
         await sync_to_async(ChatMessage.objects.create)(
@@ -50,11 +53,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         async for chunk in chatbot_service.get_recommendation(user_message):
             bot_response_text += chunk
+
+            bot_response_html = markdown.markdown(bot_response_text)
+
             await self.send(
                 text_data=json.dumps(
                     {
                         "user_message": user_message,
-                        "bot_message": bot_response_text,
+                        "bot_message": bot_response_html,
                         "is_streaming": True,
                     }
                 )
