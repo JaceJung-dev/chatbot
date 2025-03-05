@@ -1,11 +1,13 @@
 import json  # 웹소켓에서 데이터를 JSON으로 주고 받기 위해 사용
-from channels.generic.websocket import (
-    AsyncWebsocketConsumer,
-)  # 비동기 처리를 위한 기본 클래스
-from .utils import ChatBotService
-from chatroom.models import ChatRoom, ChatMessage
-from asgiref.sync import sync_to_async  # ORM을 비동기 방식으로 호출하기 위해 사용
+
 import markdown  # markdown 형식을 HTML로 변환
+from asgiref.sync import sync_to_async  # ORM을 비동기 방식으로 호출하기 위해 사용
+from channels.generic.websocket import \
+    AsyncWebsocketConsumer  # 비동기 처리를 위한 기본 클래스
+
+from chatroom.models import ChatMessage, ChatRoom
+
+from .utils import ChatBotService
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -75,7 +77,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             chatroom=chatroom, user_or_bot=False, messages=bot_response_text
         )
 
-        final_bot_response_html = markdown.markdown(bot_response_text.strip())
+        final_bot_response_html = markdown.markdown(bot_response_text)
 
         # 최종 챗봇 응답을 클라이언트에 전송
         await self.send(
