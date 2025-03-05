@@ -1,12 +1,12 @@
-from django.shortcuts import render, get_object_or_404
-from .serializers import UserSerializer
-from .models import User
-from .serializers import CustomTokenObtainPairSerializer
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.shortcuts import get_object_or_404, render
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+from .models import User
+from .serializers import CustomTokenObtainPairSerializer, UserSerializer
 
 
 class UserListAPIView(APIView):

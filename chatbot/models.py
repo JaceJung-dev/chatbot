@@ -1,4 +1,5 @@
 from django.db import models
+
 from chatroom.models import ChatRoom, TimeStampModel
 
 
